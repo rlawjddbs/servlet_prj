@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="http://211.63.89.133:8080/html_prj/day0128/join.css" rel="stylesheet" type="text/css" />
+<title>Insert title here</title>
+<style>
+	#wrap{ width:1007px; margin:0px auto;}
+	#joinHeader{ width:1007px; height:195px; background:#fff url(images/header.png) no-repeat; }
+	.span{ color:#FF0000; }
+</style>
+<script type="text/javascript">
+	window.onload = function(){
+		// 옵션 생성
+		// 년
+		var obj = document.joinFrm;
+		var b_year = obj.b_year;
+		
+		var date = new Date();
+		var year_idx = 0;
+		
+		var flag_year = date.getFullYear() - 20+1;
+		
+		for(var i = date.getFullYear() - 69; i < date.getFullYear()+1; i++){
+			// 2. select의 옵션 생성
+			b_year.options[year_idx] = new Option(i, i); // 첫번째 보여줄 값, 두번째 넘겨줄 값 (value)
+			
+			// 20살의 나이를 가진 년도에 selected
+			if (flag_year == i){
+				b_year.selectedIndex = year_idx;
+			} // end if
+			
+			year_idx++;
+		} // end for
+		
+		// 월 설정 1 ~ 12
+		var b_month = obj.b_month;
+		month_idx = 0;
+		for(var i = 1; i < 13; i++){
+			b_month.options[month_idx] = new Option(i, i);
+			month_idx++;
+		} // end for
+		
+		// 일 설정 1 ~ 31
+		var b_day = obj.b_day;
+		var day_idx = 0;
+		for(var i = 1; i< 32; i++){
+			b_day.options[day_idx] = new Option(i, i);
+			day_idx++;
+		} // end for
+		
+		//////////////////////////// 이벤트 등록 //////////////////////////
+		document.getElementById("idDup").addEventListener("click",popupCenter);
+		document.getElementById("daumZip").addEventListener("click",execPostcode);
+		document.getElementById("btnJoin").addEventListener("click",nullCheck);
+		
+		document.getElementById("pass2").addEventListener("blur",chkPass);
+		
+		document.getElementById("ssn1").addEventListener("keyup", moveSsn2);
+		document.getElementById("ssn2").addEventListener("keyup",chkSsn);
+		
+	} // onload event function
+
+	// 주민번호 앞자리에서 6글자가 입력되면 커서를 ssn2 이동
+	function moveSsn2(){
+		var obj = document.joinFrm;
+		var ssn1 = obj.ssn1;
+		
+		if(ssn1.value.replace(/[0-9]/g, "") != ""){
+			// alert("주민번호는 숫자로만 구성됩니다.");
+			ssn1.value = "";
+			obj.ssn1.focus();
+			return;
+		} // end if
+		
+		if(ssn1.value.length == 6){
+			obj.ssn2.focus();
+		} // end if 
+		
+	} // moveSsn2
+	
+	// 입력한 주민번호의 유효성 검증
+	function chkSsn(){
+		var obj=document.joinFrm;
+		if(obj.ssn2.value.length == 7){
+
+			
+			// 주민번호 첫번째 자리가 숫자로 구성되어 있는지?
+			if( obj.ssn1.value.replace(/[0-9]/g,"") != ""){
+				alert("주민번호는 첫번째 자리는 숫자로만 구성됩니다.");
+				obj.ssn1.value="";
+				obj.ssn1.focus();
+				return;
+			} // end if
+
+			// 주민번호 두번째 자리가 숫자로 구성되어 있는지?
+			if( obj.ssn2.value.replace(/[0-9]/g,"") != ""){
+				alert("주민번호는 두번째 자리는 숫자로만 구성됩니다.");
+				obj.ssn2.value="";
+				obj.ssn2.focus();
+				return;
+			} // end if
+			
+			var ssn = obj.ssn1.value+obj.ssn2.value;
+			/*
+			var flagNum = [2,3,4,5,6,7,8,9,2,3,4,5];
+			
+			var temp=0;
+			// 주민번호의 각 자리에 2,3,4,5,6,7,8,9,2,3,4,5 를 각각 곱한 값의 결과를 모두 더해서
+			// 변수에 할당
+			for(var i=0; i < flagNum.length; i++){
+				temp += ssn.charAt(i)*flagNum[i];
+			} // end for
+			// 위에서 계산된 값을 11로 나눈 나머지를 11에서 빼고 그 결과를 10으로 나눈 나머지를 구한다.
+			temp = (11-(temp%11))%10;
+			// 위에서 계산된 결과가 주민번호의 가장 마지막 자리와 일치한다면 유효, 그렇지 않다면 무효.
+
+			if(temp == ssn.charAt(12)){
+			*/
+				// 성별 체크
+				var genderFlag = ssn.charAt(6); //
+				if(genderFlag % 2 == 0){
+					obj.gender[1].checked = true;
+				} else {
+					obj.gender[0].checked = true;
+				} // end else
+					
+				var ssn_year = ssn.substring(0, 2); // 88
+				var ssn_month = ssn.substring(2,4); // 01
+				var ssn_day = ssn.substring(4,6); // 01
+				// 생년 월일.
+				if(genderFlag <=2){ // 1900년대 생
+					ssn_year = 1900 + parseInt(ssn_year);
+				} else if(genderFlag <= 4){ // 2000년대 생
+					ssn_year = 2000 + parseInt(ssn_year);
+				} // end else if
+				
+				// 생년 월일 체크
+				var b_flag = false;
+				for(var i = 0; i < obj.b_year.length; i++){
+					if(obj.b_year[i].value == ssn_year){
+						obj.b_year[i].selected = true;
+						b_flag = true;
+						break;
+					} // end if
+				} // end for
+				
+				if(!b_flag){ // 준비된 생년이 없을 때
+					obj.b_year.options[obj.b_year.length] = new Option(ssn_year,ssn_year);
+					obj.b_year[obj.b_year.length].selected = true;
+				} // end if
+				
+				obj.b_month[ssn_month-1].selected = true;
+				obj.b_day[ssn_day-1].selected = true;
+				
+				// 나이
+				var date = new Date();
+				obj.age.value = date.getFullYear() - ssn_year + 1;
+				
+				} // end if
+				
+			//} else {
+			//	alert("잘못된 주민 번호 입니다.");
+			//} // end else
+		 
+	} // chkSsn
+	
+		// 필수 입력값 체크
+		function nullCheck(){
+			
+			var obj = document.joinFrm;
+			
+			if(obj.id.value == ""){
+				alert("아이디는 필수 입력!!");
+				obj.id.focus();
+				return;
+			} // end if
+			
+			if(obj.pass1.value == ""){
+				alert("비밀번호는 필수 입력!!");
+				obj.pass1.focus();
+				return;
+			} // end if
+			
+			if(obj.pass2.value == ""){
+				alert("비밀번호 확인은 필수 입력!!");
+				obj.pass2.focus();
+				return;
+			} // end if
+			
+			if(obj.name.value == ""){
+				alert("이름은 필수 입력!!");
+				obj.name.focus();
+				return;
+			} // end if
+			
+			if(obj.ssn1.value == ""){
+				alert("주민번호 첫번째는 필수 입력!!");
+				obj.ssn1.focus();
+				return;
+			} // end if
+			
+			if(obj.ssn2.value == ""){
+				alert("주민번호 두번째는 필수 입력!!");
+				obj.ssn2.focus();
+				return;
+			} // end if
+			
+			if(obj.zipcode.value == "" || obj.addr1.value == ""){
+				alert("주소를 검색해 주세요!!!");
+				return;
+			} // end if
+			
+			if(obj.addr2.value == ""){
+				alert("상세주소는 필수 입력!!!");
+				return;
+			} // end if
+			
+			// 입력값이 모두 입력되었으므로 서버로 전송
+			obj.submit();
+	} // nullCheck
+	
+	// 비밀번호가 일치하는지 체크
+	function chkPass(){  
+		var obj = document.joinFrm;
+		if (obj.pass1.value != obj.pass2.value){
+			alert("비밀번호가 틀립니다.");
+			obj.pass1.value="";
+			obj.pass2.value="";
+			obj.pass1.focus();
+			return;
+		} // end if
+	} // chkPass
+	
+	function popupCenter(){
+		window.open("../id_dup", "idDup", "width=502, height=303");
+	} // popupCenter
+	
+	
+	
+</script>
+
+<script src="http://dmaps.daum.net/map_js_init/postcode.v2.js"></script>
+<script>
+/* 
+script를 body에 넣었을 때 에러가 발생하면 사용자는 에러메세지를 계속 클릭한 이후 제공하는 서비스를 볼 수 있다. 
+
+script를 head에 넣었다면 에러가 발생하더라도 body는 에러 메세지없이 그대로 제공된다.
+*/
+    //본 예제에서는 도로명 주소 표기 방식에 대한 법령에 따라, 내려오는 데이터를 조합하여 올바른 주소를 구성하는 방법을 설명합니다.
+    function execPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var roadAddr = data.roadAddress; // 도로명 주소 변수
+                var extraRoadAddr = ''; // 참고 항목 변수
+
+                // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                    extraRoadAddr += data.bname;
+                }
+                // 건물명이 있고, 공동주택일 경우 추가한다.
+                if(data.buildingName !== '' && data.apartment === 'Y'){
+                   extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                if(extraRoadAddr !== ''){
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById('zipcode').value = data.zonecode;
+                document.getElementById("roadAddr").value = roadAddr;
+                // document.getElementById("jibunAddr").value = data.jibunAddress;
+                
+                // 참고항목 문자열이 있을 경우 해당 필드에 넣는다.
+                if(roadAddr !== ''){
+                    document.getElementById("extraAddr").value = extraRoadAddr;
+                } else {
+                    document.getElementById("extraAddr").value = '';
+                }
+
+                /* var guideTextBox = document.getElementById("guide");
+                // 사용자가 '선택 안함'을 클릭한 경우, 예상 주소라는 표시를 해준다.
+                if(data.autoRoadAddress) {
+                    var expRoadAddr = data.autoRoadAddress + extraRoadAddr;
+                    guideTextBox.innerHTML = '(예상 도로명 주소 : ' + expRoadAddr + ')';
+                    guideTextBox.style.display = 'block';
+
+                } else if(data.autoJibunAddress) {
+                    var expJibunAddr = data.autoJibunAddress;
+                    guideTextBox.innerHTML = '(예상 지번 주소 : ' + expJibunAddr + ')';
+                    guideTextBox.style.display = 'block';
+                } else {
+                    guideTextBox.innerHTML = '';
+                    guideTextBox.style.display = 'none';
+                } // end else */
+            }
+        }).open();
+    } 
+</script>
+</head>
+<body>
+<div id="wrap">
+	<div id="joinHeader"></div>
+	<div id="joinContent">
+	<form name="joinFrm" action="../web_member_join" method="post">
+	<table align="center" width="590" border="0" cellspacing="0" cellpadding="0">
+		<tr>
+			<th>
+				<h3>회 원 가 입</h3>
+			</th>
+		</tr>
+		
+		<tr>
+			<td>
+				<table align="center" width="590" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+						<td width="100">
+							<label for="t_id"><span class="span">*</span>아이디</label>
+						</td>
+						<td width="380">
+							<input type="text" readonly="readonly" id="id" name="id" />
+							<input type="button" id="idDup" value="중복확인" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label for="t_pass" ><span class="span">*</span>비밀번호</label>
+						</td>
+						<td >
+							<input type="password" id="pass1" name="pass1" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label for="t_pass_check"><span class="span" >*</span>비밀번호 확인</label>
+						</td>
+						<td >
+							<input type="password" id="pass2" name="t_pass_check" name="pass2" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label for="name"><span class="span">*</span>이름</label>
+						</td>
+						
+						<td >
+							<input type="text" name="name" id="name" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label for="first_ssn"><span class="span">*</span>주민번호</label>
+						</td>
+						
+						<td >
+							<input type="text" name="ssn1" id="ssn1" maxlength="6" />
+							-
+							<input type="password" name="ssn2" id="ssn2" maxlength="7" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label><span class="span">*</span>성별</label>
+						</td>
+						
+						<td >
+							<input type="radio" name="gender" value="man" checked="checked" /> 남자 
+							<input type="radio" name="gender" value="woman" /> 여자
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label for="b_year">&nbsp;생년월일</label>
+						</td>
+						
+						<td >
+							<select name="b_year" id="b_year">
+							
+							</select>
+							<label for="b_year">년</label> 
+							
+							<select name="b_month" id="b_month">
+							
+							</select>
+							<label for="b_month">월</label>
+							 
+							<select name="b_day" id="b_day">
+							
+							</select>
+							<label for="b_day">일</label>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label for="age">&nbsp;나이</label>
+						</td>
+						<td >
+							<input type="text" maxlength="3" name="age" id="age" />
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label>&nbsp;관심언어</label>
+						</td>
+						<td >
+							<input type="checkbox" name="interestlang" value="java" />Java
+							<input type="checkbox" name="interestlang" value="c" />C / C++
+							<input type="checkbox" name="interestlang" value="python" />Python
+							<input type="checkbox" name="interestlang" value="vb" />VB <br />
+							<input type="checkbox" name="interestlang" value="jsp" />JSP
+							<input type="checkbox" name="interestlang" value="servlet" />Servlet
+							<input type="checkbox" name="interestlang" value="asp" />ASP
+							<input type="checkbox" name="interestlang" value="php" />PHP
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label for="single">&nbsp;결혼여부</label>
+						</td>
+						<td >
+							<input type="radio" name="marriageFlag" value="미혼" checked="checked" />미혼
+							<input type="radio" name="marriageFlag" value="기혼" />기혼
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<label for="marriage_year">&nbsp;결혼기념일</label>
+						</td>
+						<td >
+							<input type="text" name="m_year" size="4" maxlength="4" /><label for="marriage_year">년</label>
+							<input type="text" name="m_month" size="2" maxlength="2" /><label for="marriage_month">월</label>
+							<input type="text" name="m_day" size="2" maxlength="2" /><label for="marriage_day">일</label>
+						</td>
+					</tr>
+					<tr>
+						<td><span class="span">*</span>우편번호</td>
+						<td >
+							<input type="text" size="47" id="zipcode" name="zipcode" style="width:50px" />
+							&nbsp; <button type="button" class="btn" id="daumZip">우편번호검색</button>
+						</td>
+					</tr>
+					<tr>
+						<td><span class="span">*</span>주소</td>
+						<td >
+							<input type="text" size="47" id="roadAddr" name="addr1" readonly="readonly" />
+							참고주소 : <input type="text" id="extraAddr" class="inputBox" />
+						</td>
+					</tr>
+					<tr>
+						<td><span class="span">*</span>상세주소</td>
+						<td >
+							<input type="text" size="47" name="addr2" />
+						</td>
+					</tr>
+					<tr>
+						<td>&nbsp;가입인사</td>
+						<td >
+							<textarea style="width:250px; height:100px;" name="greetings"></textarea>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3" align="center">
+							<button type="button" class="btn" id="btnJoin">가입</button>&nbsp;
+							<button type="reset" class="btn">초기화</button>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">*표는 필수 입력사항</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	</form>
+	</div>
+	</div>
+</body>
+</html>
